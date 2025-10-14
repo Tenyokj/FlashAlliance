@@ -3,9 +3,9 @@ require('hardhat-deploy');
 
 module.exports = {
   solidity: {
-    version: "0.8.25", // Ваш компилятор Solidity
+    version: "0.8.25", 
     settings: {
-      evmVersion: "cancun", // Указываем Cancun для EVM
+      evmVersion: "cancun", 
       optimizer: {
         enabled: true,
         runs: 1000,
