@@ -1,6 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
 require('hardhat-deploy');
-require("dotenv").config();
 
 module.exports = {
   solidity: {
