@@ -107,3 +107,4 @@ npx hardhat run scripts/deploy.js --network localhost
 (Later) Run tests:
 
 npx hardhat test
+```
