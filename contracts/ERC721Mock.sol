@@ -1,26 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /// @title ERC721Mock
-/// @notice Simple mock implementation of an ERC-721 token for testing purposes.
-/// @dev Extends OpenZeppelin’s ERC721 and exposes a public mint function
-///      to allow anyone to mint tokens without access control.
+/// @notice Test-only ERC721 used in FlashAlliance test scenarios.
+/// @dev Anyone can mint arbitrary token ids.
+/// @custom:version 1.0.0
 contract ERC721Mock is ERC721 {
-    /// @notice Counter that can be used to track minted token IDs if desired.
-    /// @dev This variable is not automatically incremented; it is left for testing flexibility.
+    /// @notice Optional counter field for test experiments.
     uint256 public tokenIdCounter;
 
-    /// @notice Deploys the mock ERC721 contract.
-    /// @param name Token collection name.
+    /// @notice Deploy mock collection.
+    /// @param name Token name.
     /// @param symbol Token symbol.
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {}
 
-    /// @notice Mints a new token with a specified `tokenId` to the given address.
-    /// @dev No access control or supply limits are enforced; intended only for testing.
-    /// @param to The address that will receive the minted token.
-    /// @param tokenId The unique identifier for the token to mint.
+    /// @notice Mint a token to an address.
+    /// @dev Intended only for tests; no access control is enforced.
+    /// @param to Recipient address.
+    /// @param tokenId Token id to mint.
     function mint(address to, uint256 tokenId) external {
         _mint(to, tokenId);
     }

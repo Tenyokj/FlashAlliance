@@ -1,110 +1,133 @@
-# ⚡ FlashAlliance
+# FlashAlliance Contract Documentation
 
-**FlashAlliance** is a Solidity smart contract system that allows a group of participants to pool funds into alliances to collectively purchase NFTs.
+## Overview
 
-Each alliance can vote on the sale of the purchased token and automatically distribute the proceeds according to the participants' shares.
+FlashAlliance is a standalone ERC20-funded collective NFT trading module.
+Each `Alliance` instance is a self-contained pool with fixed participants and fixed ownership shares.
 
----
+This module is intentionally separate from BERT core governance contracts.
+In BERT terms, FlashAlliance should be treated as an ecosystem add-on product, not a core DAO primitive.
+Administrative controls are local (`Ownable`) per alliance.
 
-## 🧩 Contracts
+## Architecture
 
-### **1. Alliance.sol**
-> The main contract implementing the alliance logic.
+### 1. `AllianceFactory`
 
-**Functionality:**
-- Allows multiple participants to contribute ETH to purchase NFTs.
-- Checks whether the target price has been reached.
-- Allows owners to vote on the sale of NFTs and initiate the sale upon reaching a quorum.
-- Automatically distributes proceeds among participants according to their shares.
-- Uses reentrancy protection (ReentrancyGuard by OpenZeppelin).
+File: `src/FlashAlliance/AllianceFactory.sol`
 
-**Main states:**
-- `Funding` — fundraising is in progress.
-- `Acquired` — the NFT has been purchased and is in the alliance.
-- `Closed` — the sale has been completed and funds have been distributed.
+Purpose:
+- Deploys new `Alliance` contracts
+- Maintains on-chain list of deployed alliances
 
-**Key functions:**
-| Function | Description |
-|---------|----------|
-| `deposit()` | Deposits funds to the alliance fund |
-| `buyNFT(address _nftAddress, uint256 _tokenId)` | Completes the NFT purchase |
-| `voteToSell(uint256 price)` | Vote to sell at the specified price |
-| `executeSale()` | Sells the NFT and distributes ETH among participants |
+Key behavior:
+- `createAlliance(...)` validates shares and token address
+- caller of `createAlliance(...)` becomes `owner` of the created `Alliance`
 
----
+### 2. `Alliance`
 
-### **2. AllianceFactory.sol**
-> A factory contract for creating and tracking alliances.
+File: `src/FlashAlliance/Alliance.sol`
 
-**Features:**
-- Deploy new alliances with predefined participants and shares.
-- Check that shares add up to 100%.
-- Store a list of all created alliances.
-- Emit the 'AllianceCreated' event upon successful deployment of a new contract.
+Purpose:
+- Collect deposits in ERC20
+- Buy NFT from direct seller
+- Run governance-lite voting for sale
+- Execute sale and distribute proceeds
 
-**Key Functions:**
-| Function | Description |
-|----------|-----------|
-| `createAlliance(uint256 targetPrice, uint256 deadline, address[] participants, uint256[] shares)` | Creates a new alliance |
-| `getAllAlliances()` | Returns a list of all created alliances |
+States:
+- `Funding`
+- `Acquired`
+- `Closed`
 
----
+Core storage:
+- `targetPrice`, `deadline`, `totalDeposited`
+- `participants[]`, `sharePercent[address]`, `contributed[address]`
+- proposal fields: `proposedBuyer`, `proposedPrice`, `proposedSaleDeadline`
+- quorum: `quorumPercent` and `lossSaleQuorumPercent`
 
-### **3. ERC721Mock.sol**
-> A simplified implementation of an ERC-721 token for testing.
+Main functions:
+- `deposit(uint256 amount)`
+- `cancelFunding()`
+- `buyNFT(address nft, uint256 tokenId, address seller)`
+- `voteToSell(address buyer, uint256 price, uint256 saleDeadline)`
+- `resetSaleProposal()`
+- `executeSale()`
+- `voteEmergencyWithdraw(address recipient)`
+- `emergencyWithdrawNFT()`
+- `withdrawRefund()`
+- `pause()` / `unpause()` (only alliance owner)
 
-**Features:**
-- Allows any address to mint tokens without restrictions.
-- Used in tests to verify the logic of NFT buying and selling by the alliance.
+Sale policy:
+- Normal sale (`price >= minSalePrice`) requires `quorumPercent` (default 60)
+- Loss sale (`price < minSalePrice`) requires `lossSaleQuorumPercent` (default 80)
 
-**Key Functions:**
-| Function | Description |
-|---------|----------|
-| `mint(address to, uint256 tokenId)` | Mints an NFT to the specified address |
+Refund policy:
+- funding must fail (deadline passed and target not reached)
+- participant triggers `cancelFunding()`
+- participants claim own deposit via `withdrawRefund()`
 
----
+Emergency path:
+- participants vote recipient through `voteEmergencyWithdraw(...)`
+- on quorum, NFT can be rescued via `emergencyWithdrawNFT()`
 
-## ⚙️ Technologies
+### 3. `TenyokjToken`
 
-- **Solidity** ^0.8.20
-- **Hardhat** (as a testing and deployment framework)
-- **OpenZeppelin Contracts** (ReentrancyGuard, ERC721)
+File: `src/FlashAlliance/TenyokjToken.sol`
 
----
+Purpose:
+- ERC20 token for funding and settlements
 
-## 🧪 Testing
+Capabilities:
+- owner mint
+- owner pause/unpause
+- burn and permit support
 
-Tests will be written for the following scenarios:
+### 4. `ERC721Mock`
 
-| Contract | Scenarios to be tested |
-|-----------|----------------------|
-| `Alliance` | ✅ Depositing funds<br> ✅ Checking the `targetPrice` limit<br> ✅ Buying NFTs<br>    ✅ Voting and Quorum<br> ✅ Selling and distributing funds |
-| `AllianceFactory` | ✅ Creating alliances<br> ✅ Checking stake validity |
-| `ERC721Mock` | ✅ Minting and transferring NFTs |
+File: `src/FlashAlliance/ERC721Mock.sol`
 
-> ⚠️ Tests are in development. They will use **Mocha + Chai** and run through **Hardhat**.
+Purpose:
+- Test-only NFT contract for local/testnet scenarios
 
----
+## Access Control Model
 
-## 🚀 How to run the project
+- Alliance admin: `Ownable` owner set at deployment (`_admin`)
+- Alliance participants: fixed allowlist via `isParticipant`
+- Business actions are participant-gated (`onlyParticipant`)
+- Pause controls are owner-gated (`onlyOwner`)
 
-1. Install dependencies:
-```bash
-npm install
+## Events
 
-Compile contracts:
+`Alliance` emits:
+- `Deposit`
+- `FundingCancelled`
+- `Refunded`
+- `NFTBought`
+- `Voted`
+- `SaleProposalReset`
+- `SaleExecuted`
+- `EmergencyVoted`
+- `EmergencyWithdrawn`
 
-npx hardhat compile
+`AllianceFactory` emits:
+- `AllianceCreated`
 
-Start the local network:
+## Security Notes
 
-npx hardhat node
+- Reentrancy-protected external state-changing paths use `ReentrancyGuard`
+- ERC20 interactions use `SafeERC20`
+- NFT transfers use `safeTransferFrom`
+- Share sum is enforced at construction (`== 100`)
+- Last-recipient payout in `_distribute` absorbs rounding dust
 
-Deploy a contract (example):
+## Operational Notes
 
-npx hardhat run scripts/deploy.js --network localhost
+- Seller must approve NFT to Alliance before `buyNFT`
+- Buyer must approve ERC20 to Alliance before `executeSale`
+- If you need stronger admin security, set alliance owner to a multisig
 
-(Later) Run tests:
+## Test Coverage
 
-npx hardhat test
-```
+Foundry tests are located at:
+- `test/flash/FlashAlliance.t.sol`
+
+Coverage targets for `src/FlashAlliance/*` are above 90% and currently at 100% line/function in Foundry report.

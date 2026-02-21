@@ -3,49 +3,52 @@ pragma solidity ^0.8.20;
 
 import "./Alliance.sol";
 
-/// @title AllianceFactory – Deployer for Alliance Contracts
-/// @notice Deploys and tracks multiple Alliance instances where participants can pool ETH to purchase NFTs.
-/// @dev Maintains an on-chain registry of all created Alliance contracts.
+/// @title AllianceFactory
+/// @notice Deploys and tracks Alliance contracts.
+/// @dev Each created alliance sets `msg.sender` as admin/owner.
+/// @custom:version 1.0.0
 contract AllianceFactory {
-
-    /// @notice Array storing all deployed Alliance contract instances
+    /// @notice List of all alliances deployed through this factory.
     Alliance[] public alliances;
 
-    /// @notice Emitted when a new Alliance contract is successfully created
-    /// @param allianceAddress The address of the newly deployed Alliance contract
-    event AllianceCreated(address allianceAddress);
+    /// @notice Emitted when a new alliance is created.
+    /// @param allianceAddress Newly deployed alliance address.
+    /// @param token ERC20 token used by the created alliance.
+    /// @param admin Admin/owner configured for the new alliance.
+    event AllianceCreated(address indexed allianceAddress, address indexed token, address indexed admin);
 
-    /// @notice Deploy a new Alliance contract
-    /// @dev Verifies that the sum of all participant shares equals exactly 100
-    /// @param _targetPrice Total ETH target required to fund the NFT purchase (in wei)
-    /// @param _deadline Funding duration in seconds from the time of creation
-    /// @param _participants Array of participant addresses who will own the alliance
-    /// @param _shares Percentage share (0–100) for each participant; must sum to 100
-    /// @return The address of the newly created Alliance contract
+    /// @notice Deploy a new alliance contract.
+    /// @param _targetPrice Required funding amount.
+    /// @param _deadline Funding duration in seconds from creation time.
+    /// @param _participants Participant list.
+    /// @param _shares Participant shares, must sum to 100.
+    /// @param _token ERC20 token used for funding/sale payments.
+    /// @return allianceAddress Address of newly deployed alliance.
     function createAlliance(
         uint256 _targetPrice,
         uint256 _deadline,
         address[] memory _participants,
-        uint256[] memory _shares
-    ) external returns (address) {
-        require(_participants.length == _shares.length, "Participants/shares mismatch");
+        uint256[] memory _shares,
+        address _token
+    ) external returns (address allianceAddress) {
+        require(_participants.length == _shares.length, "Factory: length mismatch");
+        require(_token != address(0), "Factory: zero token");
 
-        // Ensure that the total of all shares equals exactly 100%
-        uint256 sumShares = 0;
-        for (uint i = 0; i < _shares.length; i++) {
+        uint256 sumShares;
+        for (uint256 i = 0; i < _shares.length; i++) {
             sumShares += _shares[i];
         }
-        require(sumShares == 100, "Shares must sum to 100%");
+        require(sumShares == 100, "Factory: shares must sum to 100");
 
-        Alliance alliance = new Alliance(_targetPrice, _deadline, _participants, _shares);
+        Alliance alliance = new Alliance(_targetPrice, _deadline, _participants, _shares, _token, msg.sender);
         alliances.push(alliance);
 
-        emit AllianceCreated(address(alliance));
-        return address(alliance);
+        allianceAddress = address(alliance);
+        emit AllianceCreated(allianceAddress, _token, msg.sender);
     }
 
-    /// @notice Retrieve the list of all deployed Alliance contracts
-    /// @return An array containing every Alliance instance created by this factory
+    /// @notice Returns all alliances created by this factory.
+    /// @return List of deployed alliance contract instances.
     function getAllAlliances() external view returns (Alliance[] memory) {
         return alliances;
     }
