@@ -35,17 +35,14 @@ See: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 
 **Docs**
 
-1. Getting started: `docs/GETTING_STARTED.md`
-2. Architecture: `docs/ARCHITECTURE.md`
-3. Contracts index: `docs/CONTRACTS.md`
-4. Config: `docs/CONFIG.md`
-5. Security: `docs/SECURITY.md`
-6. Operations: `docs/OPERATIONS.md`
-7. FAQ: `docs/FAQ.md`
-8. Glossary: `docs/GLOSSARY.md`
-9. Upgrades policy: `docs/UPGRADES.md`
-10. Testing guide: `test/docs_tests/TESTING.md`
-11. Deployment guide: `scripts/docs_deploy/DEPLOY.md`
+1. Architecture: [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+2. Security: [SECURITY.md](docs/SECURITY.md)
+3. Upgrades: [UPGRADES.md](docs/UPGRADES.md)
+4. Configuration: [CONFIG.md](docs/CONFIG.md)
+5. Operations: [OPERATIONS.md](docs/OPERATIONS.md)
+6. FAQ: [FAQ.md](docs/FAQ.md)
+7. Glossary: [GLOSSARY.md](docs/GLOSSARY.md)
+8. Getting Started: [GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
 **Disclaimer**
 
