@@ -1,133 +1,64 @@
-# FlashAlliance Contract Documentation
+![Bert-Alliances module v1.0.0](https://img.shields.io/badge/Bert-Alliances-module-v1.0.0-6B8E23) ![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green)
+![Node.js >=22](https://img.shields.io/badge/Node.js->=22-brightgreen) ![TypeScript 5.8.0](https://img.shields.io/badge/TypeScript-5.8.0-3178C6) ![Hardhat 3.0.15](https://img.shields.io/badge/Hardhat-3.0.1-yellow) ![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-orange) ![Upgradeable](https://img.shields.io/badge/Upgradeable-UUPS-blueviolet) ![DAO](https://img.shields.io/badge/DAO-Governance-purple)
+![Ethers 6.15.0](https://img.shields.io/badge/Ethers-6.15.0-3C3C3D) ![Tests: Unit passing](https://img.shields.io/badge/Tests%3A%20Unit-passing-success) ![Tests: Coverage >95%](https://img.shields.io/badge/coverage-95%25-orange)
+![Tests: Integration: Scratch passing](https://img.shields.io/badge/Tests%3A%20Integration%3A%20Scratch-passing-success) ![Tests: Integration: Sepolia Fork passing](https://img.shields.io/badge/Tests%3A%20Integration%3A%20Sepolia%20Fork-passing-success) ![Linters passing](https://img.shields.io/badge/Linters-passing-success)
 
-## Overview
+![FlashAlliance Banner](./docs/bert-alliances.png)
 
-FlashAlliance is a standalone ERC20-funded collective NFT trading module.
+**FlashAlliance**
+ is a standalone ERC20-funded collective NFT trading module.
 Each `Alliance` instance is a self-contained pool with fixed participants and fixed ownership shares.
 
 This module is intentionally separate from BERT core governance contracts.
 In BERT terms, FlashAlliance should be treated as an ecosystem add-on product, not a core DAO primitive.
 Administrative controls are local (`Ownable`) per alliance.
 
-## Architecture
+Note: Please read the Contract [Documentation](https://bertdao-docs.vercel.app) before integrating with this repo.
 
-### 1. `AllianceFactory`
+**Core Flow**
 
-File: `src/FlashAlliance/AllianceFactory.sol`
+1. Participants deposit ERC20 in `Funding`.
+2. Alliance buys NFT when target is reached.
+3. Participants vote sale params in `Acquired`.
+4. Sale executes and proceeds are split by fixed shares.
+5. If funding fails, participants withdraw refunds.
+6. Emergency NFT withdrawal is available via participant quorum.
 
-Purpose:
-- Deploys new `Alliance` contracts
-- Maintains on-chain list of deployed alliances
 
-Key behavior:
-- `createAlliance(...)` validates shares and token address
-- caller of `createAlliance(...)` becomes `owner` of the created `Alliance`
+**Contract Documentation**
+See: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 
-### 2. `Alliance`
+**Learn More**
+1. Documentation: [website](https://bertdao-docs.vercel.app)
+2. BERT core repository: [repository](https://github.com/Tenyokj/bert-core)
+3. Main site: [website](https://bertdao.vercel.app)
+4. Bert-Alliances site: [website](https://bert-alliances.vercel.app)
 
-File: `src/FlashAlliance/Alliance.sol`
+**Docs**
 
-Purpose:
-- Collect deposits in ERC20
-- Buy NFT from direct seller
-- Run governance-lite voting for sale
-- Execute sale and distribute proceeds
+1. Getting started: `docs/GETTING_STARTED.md`
+2. Architecture: `docs/ARCHITECTURE.md`
+3. Contracts index: `docs/CONTRACTS.md`
+4. Config: `docs/CONFIG.md`
+5. Security: `docs/SECURITY.md`
+6. Operations: `docs/OPERATIONS.md`
+7. FAQ: `docs/FAQ.md`
+8. Glossary: `docs/GLOSSARY.md`
+9. Upgrades policy: `docs/UPGRADES.md`
+10. Testing guide: `test/docs_tests/TESTING.md`
+11. Deployment guide: `scripts/docs_deploy/DEPLOY.md`
 
-States:
-- `Funding`
-- `Acquired`
-- `Closed`
+**Disclaimer**
 
-Core storage:
-- `targetPrice`, `deadline`, `totalDeposited`
-- `participants[]`, `sharePercent[address]`, `contributed[address]`
-- proposal fields: `proposedBuyer`, `proposedPrice`, `proposedSaleDeadline`
-- quorum: `quorumPercent` and `lossSaleQuorumPercent`
+This repository contains the core smart contracts of the protocol. The codebase may evolve rapidly, so older guides may not match the current layout. Refer to the latest docs for accurate integration guidance.
 
-Main functions:
-- `deposit(uint256 amount)`
-- `cancelFunding()`
-- `buyNFT(address nft, uint256 tokenId, address seller)`
-- `voteToSell(address buyer, uint256 price, uint256 saleDeadline)`
-- `resetSaleProposal()`
-- `executeSale()`
-- `voteEmergencyWithdraw(address recipient)`
-- `emergencyWithdrawNFT()`
-- `withdrawRefund()`
-- `pause()` / `unpause()` (only alliance owner)
+**License**
 
-Sale policy:
-- Normal sale (`price >= minSalePrice`) requires `quorumPercent` (default 60)
-- Loss sale (`price < minSalePrice`) requires `lossSaleQuorumPercent` (default 80)
+2025 BERT info@tenyokj
 
-Refund policy:
-- funding must fail (deadline passed and target not reached)
-- participant triggers `cancelFunding()`
-- participants claim own deposit via `withdrawRefund()`
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License, or any later version.
 
-Emergency path:
-- participants vote recipient through `voteEmergencyWithdraw(...)`
-- on quorum, NFT can be rescued via `emergencyWithdrawNFT()`
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-### 3. `TenyokjToken`
+You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 
-File: `src/FlashAlliance/TenyokjToken.sol`
-
-Purpose:
-- ERC20 token for funding and settlements
-
-Capabilities:
-- owner mint
-- owner pause/unpause
-- burn and permit support
-
-### 4. `ERC721Mock`
-
-File: `src/FlashAlliance/ERC721Mock.sol`
-
-Purpose:
-- Test-only NFT contract for local/testnet scenarios
-
-## Access Control Model
-
-- Alliance admin: `Ownable` owner set at deployment (`_admin`)
-- Alliance participants: fixed allowlist via `isParticipant`
-- Business actions are participant-gated (`onlyParticipant`)
-- Pause controls are owner-gated (`onlyOwner`)
-
-## Events
-
-`Alliance` emits:
-- `Deposit`
-- `FundingCancelled`
-- `Refunded`
-- `NFTBought`
-- `Voted`
-- `SaleProposalReset`
-- `SaleExecuted`
-- `EmergencyVoted`
-- `EmergencyWithdrawn`
-
-`AllianceFactory` emits:
-- `AllianceCreated`
-
-## Security Notes
-
-- Reentrancy-protected external state-changing paths use `ReentrancyGuard`
-- ERC20 interactions use `SafeERC20`
-- NFT transfers use `safeTransferFrom`
-- Share sum is enforced at construction (`== 100`)
-- Last-recipient payout in `_distribute` absorbs rounding dust
-
-## Operational Notes
-
-- Seller must approve NFT to Alliance before `buyNFT`
-- Buyer must approve ERC20 to Alliance before `executeSale`
-- If you need stronger admin security, set alliance owner to a multisig
-
-## Test Coverage
-
-Foundry tests are located at:
-- `test/flash/FlashAlliance.t.sol`
-
-Coverage targets for `src/FlashAlliance/*` are above 90% and currently at 100% line/function in Foundry report.
