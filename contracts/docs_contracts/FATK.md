@@ -1,4 +1,4 @@
-# TenyokjToken
+# FATK
 
 **Summary**
 ERC20 token used in FlashAlliance for funding, sale settlement, and payout distribution.
