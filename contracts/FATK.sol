@@ -7,17 +7,17 @@ import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC2
 import {ERC20Pausable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
-/// @title TenyokjToken
+/// @title FATK - Flash Alliance Token
 /// @notice ERC20 token used to fund and settle FlashAlliance deals.
 /// @dev Owner can mint and pause token transfers.
 /// @custom:version 1.0.0
-contract TenyokjToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit {
+contract FATK is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit {
     /// @notice Deploys token contract.
     /// @param initialOwner Owner with mint/pause permissions.
     constructor(address initialOwner)
-        ERC20("TenyokjToken", "TTK")
+        ERC20("FlashAlliance Token", "FATK")
         Ownable(initialOwner)
-        ERC20Permit("TenyokjToken")
+        ERC20Permit("FlashAlliance Token")
     {}
 
     /// @notice Pause all token transfers.
