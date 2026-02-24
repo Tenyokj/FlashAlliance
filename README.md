@@ -5,14 +5,15 @@
 ![FlashAlliance Banner](./docs/bert-alliances.png)
 
 **FlashAlliance**
- is a standalone ERC20-funded collective NFT trading module.
+is a standalone ERC20-funded collective NFT trading module.
 Each `Alliance` instance is a self-contained pool with fixed participants and fixed ownership shares.
 
-This module is intentionally separate from BERT core governance contracts.
-In BERT terms, FlashAlliance should be treated as an ecosystem add-on product, not a core DAO primitive.
-Administrative controls are local (`Ownable`) per alliance.
+**FlashAlliance** is designed as a lightweight, capital-efficient coordination layer for small groups that want to acquire and manage high-value NFTs together.
 
-Note: Please read the Contract [Documentation](https://bertdao-docs.vercel.app) before integrating with this repo.
+There is no global DAO dependency.
+Each Alliance operates independently.
+
+Note: Please read the Contract [Documentation](https://flash-docs.vercel.app) before integrating with this repo.
 
 **Core Flow**
 
@@ -28,10 +29,8 @@ Note: Please read the Contract [Documentation](https://bertdao-docs.vercel.app) 
 See: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 
 **Learn More**
-1. Documentation: [website](https://bertdao-docs.vercel.app)
-2. BERT core repository: [repository](https://github.com/Tenyokj/bert-core)
-3. Main site: [website](https://bertdao.vercel.app)
-4. Bert-Alliances site: [website](https://bert-alliances.vercel.app)
+1. Documentation: [website](https://flash-docs.vercel.app)
+2. Flash Alliances site: [website](https://flash-alliances.vercel.app)
 
 **Docs**
 
