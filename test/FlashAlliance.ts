@@ -22,7 +22,7 @@ describe("FlashAlliance (Ownable)", function () {
     const [deployer, admin, outsider, alice, bob, carol, seller, buyer, altBuyer] =
       await ethers.getSigners();
 
-    const Token = await ethers.getContractFactory("TenyokjToken", deployer);
+    const Token = await ethers.getContractFactory("FATK", deployer);
     const token = await Token.deploy(deployer.address);
     await token.waitForDeployment();
 
