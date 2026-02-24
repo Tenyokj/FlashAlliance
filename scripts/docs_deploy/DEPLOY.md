@@ -27,7 +27,7 @@ npx hardhat run scripts/deploy/deploy-alliance.ts --network localhost
 
 **General Information**
 FlashAlliance deployment is non-upgradeable and straightforward:
-1. Deploy `TenyokjToken`
+1. Deploy `FATK`
 2. Deploy `AllianceFactory`
 3. (Optional) Create one sample `Alliance`
 
@@ -38,11 +38,11 @@ Admin model is local `Ownable`:
 
 **Deployment Config**
 Required env vars:
-1. `TOKEN_OWNER` - owner of `TenyokjToken` (mint/pause rights)
+1. `TOKEN_OWNER` - owner of `FATK` (mint/pause rights)
 
 Optional env vars:
 1. `CREATE_SAMPLE_ALLIANCE` (`true` to auto-create one alliance)
-2. `SAMPLE_TOKEN` (defaults to freshly deployed `TenyokjToken`)
+2. `SAMPLE_TOKEN` (defaults to freshly deployed `FATK`)
 3. `SAMPLE_TARGET_PRICE_WEI`
 4. `SAMPLE_DEADLINE_SECONDS`
 5. `SAMPLE_PARTICIPANTS` (comma-separated addresses)
@@ -63,7 +63,7 @@ npx hardhat run scripts/deploy/deploy-alliance.ts --network localhost
 ```
 
 3. Save output addresses:
-1. `TenyokjToken deployed: <address>`
+1. `FATK deployed: <address>`
 2. `AllianceFactory deployed: <address>`
 
 Notes:
@@ -124,7 +124,7 @@ Expected: not `"0x"`.
 
 2. Confirm token owner:
 ```js
-const token = await ethers.getContractAt("TenyokjToken", "<token_address>");
+const token = await ethers.getContractAt("FATK", "<token_address>");
 await token.owner();
 ```
 Expected: `TOKEN_OWNER`.
