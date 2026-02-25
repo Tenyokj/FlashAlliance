@@ -29,8 +29,8 @@ Note: Please read the Contract [Documentation](https://flash-docs.vercel.app) be
 See: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 
 **Learn More**
-1. Documentation: [website](https://flash-docs.vercel.app)
-2. Flash Alliances site: [website](https://flash-alliances.vercel.app)
+1. Flash Alliances site: [website](https://flash-alliances.vercel.app)
+2. Flash Alliances front: [repository](https://github.com/Tenyokj/FlashAlliance-front.git)
 
 **Docs**
 
